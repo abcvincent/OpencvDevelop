@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/fileopen.png</file>
+        <file>images/filesave.png</file>
+        <file>images/Mirror_Horizontally_32.png</file>
+        <file>images/Mirror_Vertically_32.png</file>
+        <file>images/eye_32px.png</file>
+        <file>images/eye_64px.png</file>
+        <file>images/eye_72px.png</file>
+        <file>images/Gray_24px.png</file>
+        <file>images/Chart_64gray.png</file>
+        <file>images/Chart_64t.png</file>
+        <file>images/fushi.png</file>
+    </qresource>
+</RCC>

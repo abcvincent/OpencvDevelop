@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Opencv开发平台</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="rc.qrc">
+    <normaloff>:/images/eye_64px.png</normaloff>:/images/eye_64px.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QMdiArea" name="mdiArea">
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+      <property name="activationOrder">
+       <enum>QMdiArea::CreationOrder</enum>
+      </property>
+      <property name="tabPosition">
+       <enum>QTabWidget::South</enum>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>文件</string>
+    </property>
+    <addaction name="ac_openfile"/>
+    <addaction name="ac_savefile"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>图像处理</string>
+    </property>
+    <widget class="QMenu" name="menu_3">
+     <property name="title">
+      <string>翻转</string>
+     </property>
+     <addaction name="ac_h_v"/>
+    </widget>
+    <widget class="QMenu" name="menu_4">
+     <property name="title">
+      <string>形态处理</string>
+     </property>
+     <addaction name="ac_erode"/>
+     <addaction name="ac_dilate"/>
+     <addaction name="ac_morphologyEx"/>
+    </widget>
+    <widget class="QMenu" name="menu_5">
+     <property name="title">
+      <string>滤波</string>
+     </property>
+     <addaction name="ac_blur"/>
+     <addaction name="ac_gaussianblur"/>
+     <addaction name="ac_medianblur"/>
+     <addaction name="ac_bilateralfilter"/>
+    </widget>
+    <widget class="QMenu" name="menu_6">
+     <property name="title">
+      <string>放缩</string>
+     </property>
+     <addaction name="ac_PyrUp"/>
+     <addaction name="ac_PyrDown"/>
+     <addaction name="ac_Resize"/>
+    </widget>
+    <widget class="QMenu" name="menu_7">
+     <property name="title">
+      <string>旋转</string>
+     </property>
+     <addaction name="ac_warpAffineClockwise"/>
+     <addaction name="ac_warpAffineClockwise2"/>
+     <addaction name="ac_warpAffineF"/>
+     <addaction name="ac_warpAffine"/>
+    </widget>
+    <widget class="QMenu" name="menu_9">
+     <property name="title">
+      <string>灰度处理</string>
+     </property>
+     <addaction name="ac_gray"/>
+     <addaction name="ac_binary"/>
+    </widget>
+    <addaction name="menu_3"/>
+    <addaction name="menu_4"/>
+    <addaction name="menu_5"/>
+    <addaction name="menu_6"/>
+    <addaction name="menu_7"/>
+    <addaction name="menu_9"/>
+   </widget>
+   <widget class="QMenu" name="menu_8">
+    <property name="title">
+     <string>窗口</string>
+    </property>
+    <addaction name="ac_imageOriginal"/>
+    <addaction name="ac_codeFlow"/>
+    <addaction name="ac_order"/>
+    <addaction name="ac_stacking"/>
+    <addaction name="ac_closeAll"/>
+    <addaction name="ac_nextOne"/>
+    <addaction name="ac_preOne"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+   <addaction name="menu_8"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="ac_openfile"/>
+   <addaction name="ac_savefile"/>
+   <addaction name="ac_gray"/>
+   <addaction name="ac_h_v"/>
+   <addaction name="ac_erode"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="ac_openfile">
+   <property name="icon">
+    <iconset resource="rc.qrc">
+     <normaloff>:/images/fileopen.png</normaloff>:/images/fileopen.png</iconset>
+   </property>
+   <property name="text">
+    <string>打开图像</string>
+   </property>
+  </action>
+  <action name="ac_savefile">
+   <property name="icon">
+    <iconset resource="rc.qrc">
+     <normaloff>:/images/filesave.png</normaloff>:/images/filesave.png</iconset>
+   </property>
+   <property name="text">
+    <string>保存图像</string>
+   </property>
+  </action>
+  <action name="ac_h_v">
+   <property name="icon">
+    <iconset resource="rc.qrc">
+     <normaloff>:/images/Mirror_Horizontally_32.png</normaloff>:/images/Mirror_Horizontally_32.png</iconset>
+   </property>
+   <property name="text">
+    <string>翻转操作</string>
+   </property>
+   <property name="toolTip">
+    <string>翻转操作</string>
+   </property>
+  </action>
+  <action name="ac_erode">
+   <property name="icon">
+    <iconset resource="rc.qrc">
+     <normaloff>:/images/fushi.png</normaloff>:/images/fushi.png</iconset>
+   </property>
+   <property name="text">
+    <string>腐蚀</string>
+   </property>
+  </action>
+  <action name="ac_dilate">
+   <property name="text">
+    <string>膨胀</string>
+   </property>
+  </action>
+  <action name="ac_morphologyEx">
+   <property name="text">
+    <string>形态学处理</string>
+   </property>
+   <property name="toolTip">
+    <string>形态学处理，开闭运算，顶黑帽运算</string>
+   </property>
+  </action>
+  <action name="ac_blur">
+   <property name="text">
+    <string>均值</string>
+   </property>
+  </action>
+  <action name="ac_gaussianblur">
+   <property name="text">
+    <string>高斯</string>
+   </property>
+  </action>
+  <action name="ac_medianblur">
+   <property name="text">
+    <string>中值</string>
+   </property>
+  </action>
+  <action name="ac_bilateralfilter">
+   <property name="text">
+    <string>双边</string>
+   </property>
+  </action>
+  <action name="ac_PyrUp">
+   <property name="text">
+    <string>放大（PyrUp）</string>
+   </property>
+  </action>
+  <action name="ac_PyrDown">
+   <property name="text">
+    <string>缩小(PyrDown)</string>
+   </property>
+  </action>
+  <action name="ac_Resize">
+   <property name="text">
+    <string>放大缩小（Resize）</string>
+   </property>
+   <property name="toolTip">
+    <string>放大缩小（Resize）</string>
+   </property>
+  </action>
+  <action name="ac_warpAffineClockwise">
+   <property name="text">
+    <string>顺时针</string>
+   </property>
+  </action>
+  <action name="ac_warpAffineClockwise2">
+   <property name="text">
+    <string>顺时针放缩</string>
+   </property>
+  </action>
+  <action name="ac_warpAffineF">
+   <property name="text">
+    <string>逆时针</string>
+   </property>
+  </action>
+  <action name="ac_warpAffine">
+   <property name="text">
+    <string>零旋转放缩</string>
+   </property>
+  </action>
+  <action name="ac_imageOriginal">
+   <property name="text">
+    <string>图元窗口</string>
+   </property>
+  </action>
+  <action name="ac_codeFlow">
+   <property name="text">
+    <string>程序流程窗口</string>
+   </property>
+  </action>
+  <action name="ac_order">
+   <property name="text">
+    <string>平铺</string>
+   </property>
+   <property name="toolTip">
+    <string>平铺窗口</string>
+   </property>
+  </action>
+  <action name="ac_stacking">
+   <property name="text">
+    <string>叠层</string>
+   </property>
+   <property name="toolTip">
+    <string>叠层排布</string>
+   </property>
+  </action>
+  <action name="ac_closeAll">
+   <property name="text">
+    <string>关闭所有</string>
+   </property>
+   <property name="toolTip">
+    <string>关闭所有窗口</string>
+   </property>
+  </action>
+  <action name="ac_nextOne">
+   <property name="text">
+    <string>下一个</string>
+   </property>
+   <property name="toolTip">
+    <string>下一个窗口</string>
+   </property>
+  </action>
+  <action name="ac_preOne">
+   <property name="text">
+    <string>前一个</string>
+   </property>
+   <property name="toolTip">
+    <string>前一个窗口</string>
+   </property>
+  </action>
+  <action name="ac_gray">
+   <property name="icon">
+    <iconset resource="rc.qrc">
+     <normaloff>:/images/Gray_24px.png</normaloff>:/images/Gray_24px.png</iconset>
+   </property>
+   <property name="text">
+    <string>灰度处理</string>
+   </property>
+  </action>
+  <action name="ac_binary">
+   <property name="text">
+    <string>二值图</string>
+   </property>
+   <property name="toolTip">
+    <string>二值图</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="rc.qrc"/>
+ </resources>
+ <connections/>
+</ui>
