@@ -96,6 +96,7 @@ void MainWindow::on_ac_openfile_triggered()
     QString  str=fileName;//文件名
     std::string path = str.toLocal8Bit().toStdString(); //opencv加载中文问题关键是这个
     Mat pImgs=imread(path,1 );//cv函数创建Mat
+
     cvtColor(pImgs,pImgs,CV_BGR2RGB);//opencv Mat一般是bgr格式需要转换成rgb
 
     QString  str1="原始图";//操作名
@@ -181,23 +182,41 @@ void MainWindow::on_ac_savefile_triggered()
                 Mat dstImage=listMatMainWid.at(i);
                 QString savePath=QString("%1//%2.jpg").arg(dirPath).arg(saveName);
 
-                //mat保存方法
-                if(dstImage.channels()!=1)//灰度图通道变为1
+                /*
+                //mat保存方法,有bug,bgr会转rgb原因未知
+                if(dstImage.channels()==1)//灰度图通道变为1
                 {
-                   cvtColor(dstImage,dstImage,CV_RGB2BGR);
+                   dstImage=dstImage;
                 }
-
+                else
+                {
+                  cvtColor(dstImage,dstImage,CV_RGB2BGR);
+                }
                 QByteArray ba = savePath.toLatin1();
                 char *savePathCV=ba.data();
                 IplImage qImg;
                 qImg = IplImage(dstImage); //
                 cvSaveImage(savePathCV, &qImg);
+                */
 
-                ////QImage保存方法
-                //  QString savePath=QString("%1//%2.jpg").arg(dirPath).arg(saveName);
-                // QImage images((const uchar*)dstImage.data, dstImage.cols,
-                //             dstImage.rows,dstImage.cols*dstImage.channels(),QImage::Format_RGB888);
-                //  images.save(savePath);
+                //QImage保存方法
+                QImage images;
+                if(dstImage.channels()==1)//灰度图通道变为1
+                {
+                    //    灰度转换时候需要用Format_Grayscale8
+                    QImage imagesGray((const uchar*)dstImage.data, dstImage.cols,
+                                      dstImage.rows,dstImage.cols*dstImage.channels(),QImage::Format_Grayscale8);
+                    images=imagesGray;
+                }
+                else
+                {
+                    // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。
+                    QImage imagesOriginal((const uchar*)dstImage.data, dstImage.cols,
+                                          dstImage.rows,dstImage.cols*dstImage.channels(),QImage::Format_RGB888);
+                    images=imagesOriginal;
+                }
+
+                  images.save(savePath);
 
             }
             QMessageBox::information(this,"信息","保存成功");
@@ -208,182 +227,6 @@ void MainWindow::on_ac_savefile_triggered()
     }
 }
 
-//void MainWindow::on_ac_horizontal_triggered()
-//{
-//    Mat dstImage;
-//    QString strg="水平翻转";
-//    QString textDlg="算子：cv::filp((Input src,Outpu dst,int flipCode)";
-
-//    if(listVariableMainWid.isEmpty()){
-//        QMessageBox emptybox;
-//        emptybox.about(NULL,"信息","没有加载图片");
-//    }
-//    else
-//    {
-//        //打开操作对话框，创建时候需要将数据输入，操作名，变量list<T>,算子解释
-//        VariateDialog *varDlg=new VariateDialog(strg,listVariableMainWid,textDlg);
-//        varDlg->exec();//显示对话框
-
-//        if(varDlg->cancelDlg==1)//做判断如果对话框点击取消或叉则不添加，等于1时才赋值等
-//        {
-//            Mat matOri;//创建一个Mat
-//            for(int i=0;i<listVariableMainWid.size();++i)//遍历变量名
-//            {
-//                //变量名如果和对话框中的值相等输出对象的Mat
-//                if(listVariableMainWid.at(i)==varDlg->comboxStr)
-//                {
-//                    matOri=listMatMainWid.at(i);
-//                    break;
-//                }
-//            }
-//            QString inImgDlgVar=varDlg->comboxStr;//输入变量名字
-//            QString outImgDlgVar=varDlg->lineEditStr;//输出变量名字
-
-//            //debug
-//            qDebug()<<"inImgDlgVar"<<inImgDlgVar;
-//            qDebug()<<"outImgDlgVar"<<outImgDlgVar;
-//            qDebug()<<"varDlg->comboxStr"<<varDlg->comboxStr;
-
-//            cv::flip(matOri,dstImage,1);//进行翻转操作
-
-//            for(int i=0;i<listVariableMainWid.size();++i)//遍历变量名，如果输出重复设为默认
-//            {
-//                if(outImgDlgVar==listVariableMainWid.at(i))//如果没有输入变量
-//                {
-//                    mesgbox();
-//                    QString strVar= QString::number(listVariableMainWid.size(),10,0);
-//                    QString strVariable=QString("image%1").arg(strVar);
-//                    outImgDlgVar=strVariable;
-//                    break;
-//                }
-//            }
-
-//            if(outImgDlgVar.isEmpty())//如果没有输入变量，设为默认
-//            {
-//                mesgbox();
-//                QString strVar= QString::number(listVariableMainWid.size(),10,0);
-//                QString strVariable=QString("image%1").arg(strVar);
-//                outImgDlgVar=strVariable;
-//            }
-
-//            listVariableMainWid.append(outImgDlgVar);//添加变量名list
-//            listNameMainWid.append(strg);//添加操作名list
-
-//            if(listVariableMainWid.size()>9)
-//            {
-//                Mat matImageMainWid = Mat(Size(2200, 2200), CV_8UC3);//QPixmap(2200,2200);
-//                listMatMainWid.append(matImageMainWid);
-//            }
-//            listMatMainWid.insert(listVariableMainWid.size()-1,dstImage);//添加图元list
-
-//            //    matList.insert(listText.size()-1,listMat);
-
-//            QString sendstrg=QString("cv::filp(%1,%2,1);//水平翻转\r\n").arg(inImgDlgVar).arg(outImgDlgVar);
-//            emit sendStr(-1,sendstrg);
-//            emit sendDataMW(dstImage,strg,outImgDlgVar,0,-1);
-//            emit sendAction();
-
-//            listCodeMainWid.append(sendstrg);
-
-//        }
-//        else
-//        {
-//            QMessageBox mesg;
-//            mesg.about(NULL,"信息","已经取消输入");
-//        }
-
-//    }
-//}
-
-//void MainWindow::on_ac_vertial_triggered()
-//{
-//    Mat dstImage;
-//    QString strg="垂直翻转";
-//    QString textDlg="算子：cv::filp((Input src,Outpu dst,int flipCode)";
-
-//    if(listVariableMainWid.isEmpty()){
-//        QMessageBox emptybox;
-//        emptybox.about(NULL,"信息","没有加载图片");
-//    }
-//    else
-//    {
-//        VariateDialog *varDlg=new VariateDialog(strg,listVariableMainWid,textDlg);
-//        varDlg->exec();//show()函数窗口不停留
-//        if(varDlg->cancelDlg==1)
-//        {
-//            Mat matOri;
-//            for(int i=0;i<listVariableMainWid.size();++i)
-//            {
-//                if(listVariableMainWid.at(i)==varDlg->comboxStr)
-//                {
-//                    matOri=listMatMainWid.at(i);
-//                    break;
-//                }
-//            }
-
-//            QString inImgDlgVar=varDlg->comboxStr;
-//            QString outImgDlgVar=varDlg->lineEditStr;
-
-//            qDebug()<<"inImgDlgVar"<<inImgDlgVar;
-//            qDebug()<<"outImgDlgVar"<<outImgDlgVar;
-//            qDebug()<<"varDlg->comboxStr"<<varDlg->comboxStr;
-
-//            cv::flip(matOri,dstImage,0);
-
-//            //    QString textDlgVar="image";//获取对话框的选择
-//            //    cv::flip(pImgMat,dstImage,0);
-
-//            //    QImage image((const uchar*)pImgMat.data, pImgMat.cols,
-//            //                 pImgMat.rows,pImgMat.cols*pImgMat.channels(),QImage::Format_RGB888);
-//            //    // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。
-//            //    QPixmap pixmapCV = QPixmap::fromImage(image.scaled(size(), Qt::KeepAspectRatio) );
-
-
-
-//            for(int i=0;i<listVariableMainWid.size();++i)//遍历变量名，如果输出重复设为默认
-//            {
-//                if(outImgDlgVar==listVariableMainWid.at(i))//如果没有输入变量
-//                {
-//                    mesgbox();
-//                    QString strVar= QString::number(listVariableMainWid.size(),10,0);
-//                    QString strVariable=QString("image%1").arg(strVar);
-//                    outImgDlgVar=strVariable;
-//                    break;
-//                }
-//            }
-
-//            if(outImgDlgVar.isEmpty())
-//            {
-//                mesgbox();
-//                QString strVar= QString::number(listVariableMainWid.size(),10,0);
-//                QString strVariable=QString("image%1").arg(strVar);
-//                outImgDlgVar=strVariable;
-//            }
-
-//            listVariableMainWid.append(outImgDlgVar);//添加变量名list
-//            listNameMainWid.append(strg);//添加操作名list
-//            if(listVariableMainWid.size()>9)
-//            {
-//                Mat matImageMainWid = Mat(Size(2200, 2200), CV_8UC3);//QPixmap(2200,2200);
-//                listMatMainWid.append(matImageMainWid);
-//            }
-//            listMatMainWid.insert(listVariableMainWid.size()-1,dstImage);//添加图元list
-//            QString sendstrg=QString("cv::filp(%1,%2,0);//垂直翻转\r\n").arg(inImgDlgVar).arg(outImgDlgVar);
-//            emit sendStr(-1,sendstrg);
-//            emit sendDataMW(dstImage,strg,outImgDlgVar,0,-1);
-//            emit sendAction();
-
-//            listCodeMainWid.append(sendstrg);
-
-//        }
-//        else
-//        {
-//            QMessageBox mesg;
-//            mesg.about(NULL,"信息","已经取消输入");
-//        }
-//    }
-
-//}
 
 
 void MainWindow::receiveDataList(Mat imageData,QString textData,QString controlName)
@@ -528,8 +371,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     {
         QMessageBox::StandardButton mesgdir= QMessageBox::information (NULL,
                                                                        "信息", "文件未保存，是否保存？",
-                                                                       QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
-
+                                                                      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
         if(mesgdir==QMessageBox::Yes)
         {
             on_ac_savefile_triggered();

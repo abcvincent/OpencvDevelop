@@ -37,8 +37,6 @@ void MyImageList::showListItem(Mat dstImage,QString strName,QString controlName)
 
     QImage images;  
 
-
-
     if(dstImage.channels()==1)//灰度图通道变为1
     {
         //    灰度转换时候需要用Format_Grayscale8
