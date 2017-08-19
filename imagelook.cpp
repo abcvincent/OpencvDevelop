@@ -56,8 +56,8 @@ void ImageLook::showImage(Mat matL,QString nameL,QString controlName)
          image=imageOriginal;
     }
 
-
-    QPixmap pixmapCV = QPixmap::fromImage(image.scaled(size(), Qt::KeepAspectRatio) );
+    QPixmap pixmapCV =QPixmap::fromImage(image);
+//    QPixmap pixmapCV = QPixmap::fromImage(image.scaled(size(), Qt::KeepAspectRatio) );
 
     pixItem = new MyPixItem(new QPixmap(pixmapCV));
     //将该图元对象添加到场景中，并设置此图元在场景中的位置为中心（0，0）

@@ -74,9 +74,314 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+///////////////////////////////////////////
+//实验程序开始
+void MainWindow::on_ac_programme_triggered()
+{
+//    QMessageBox mesg;
+//    mesg.about(NULL,"信息","开始定义程序");
+
+
+
+    QString strg="自定义图像处理";
+    QString textDlg="算子：无";
+    QList<QString> listCV_CodeWid1;
+    listCV_CodeWid1={"Not"};
+    QList<QString> listCV_CodeWid2;
+    listCV_CodeWid2={"Not"};
+    QList<QString> listCV_CodeWid3;
+    listCV_CodeWid3={"Not"};
+    int VariaeCount=1;
+
+
+    Mat dstImage;
+    if(listVariableMainWid.isEmpty()){
+        QMessageBox emptybox;
+        emptybox.about(NULL,"信息","没有加载图片");
+    }
+    else
+    {
+        //打开操作对话框，创建时候需要将数据输入，操作名，变量list<T>,算子解释
+        VariateDialog *varDlg=new VariateDialog(strg,
+                                                listVariableMainWid,
+                                                textDlg,
+                                                VariaeCount,
+                                                listCV_CodeWid1,
+                                                listCV_CodeWid2,
+                                                listCV_CodeWid3);
+        varDlg->exec();//显示对话框
+
+        if(varDlg->cancelDlg==1)//做判断如果对话框点击取消或叉则不添加，等于1时才赋值等
+        {
+            Mat matOri;//创建一个Mat
+            for(int i=0;i<listVariableMainWid.size();++i)//遍历变量名
+            {
+                //变量名如果和对话框中的值相等输出对象的Mat
+                if(listVariableMainWid.at(i)==varDlg->comboxStr)
+                {
+                    matOri=listMatMainWid.at(i);
+                    break;
+                }
+            }
+            QString inImgDlgVar=varDlg->comboxStr;//输入变量名字
+            QString outImgDlgVar=varDlg->lineEditStr;//输出变量名字
+
+
+            for(int i=0;i<listVariableMainWid.size();++i)//遍历变量名，如果输出重复设为默认
+            {
+                if(outImgDlgVar==listVariableMainWid.at(i))//如果没有输入变量
+                {
+                    mesgbox();
+                    QString strVar= QString::number(listVariableMainWid.size(),10,0);
+                    QString strVariable=QString("image%1").arg(strVar);
+                    outImgDlgVar=strVariable;
+                    break;
+                }
+            }
+
+            if(outImgDlgVar.isEmpty())//如果没有输入变量，设为默认
+            {
+                mesgbox();
+                QString strVar= QString::number(listVariableMainWid.size(),10,0);
+                QString strVariable=QString("image%1").arg(strVar);
+                outImgDlgVar=strVariable;
+            }
+
+            listVariableMainWid.append(outImgDlgVar);//添加变量名list
+            listNameMainWid.append(strg);//添加操作名list
+
+
+
+            ////////////////////////////////////////////////////
+            ///////////////////////////////
+            /////////////////////////////
+            ////////////////////////
+
+            //cvQueryHistValue_1D宏，必须加下面句，不然报错，没有
+#define cvQueryHistValue_1D( hist, idx0 )\
+    ((float)cvGetReal1D( (hist)->bins, (idx0)))
+
+            //进行，灰度处理
+            //matOri输入图像 由对话框来选
+            //dstImage输出图像，最后希望显示的图像必须添加
+            //例如：cv::cvtColor(matOri,dstImage,COLOR_RGB2GRAY);
+
+            //灰度直方图处理测试
+
+            IplImage *src= &IplImage(matOri);
+            IplImage* gray_plane = cvCreateImage(cvGetSize(src),8,1);
+            cvCvtColor(src,gray_plane,CV_RGB2GRAY);
+//              cv::cvtColor(src,gray_plane,COLOR_RGB2GRAY);
+
+
+            int hist_size = 256;    //直方图尺寸
+            int hist_height = 256;
+            float range[] = {0,255};  //灰度级的范围
+            float* ranges[]={range};
+            //创建一维直方图，统计图像在[0 255]像素的均匀分布
+            CvHistogram* gray_hist = cvCreateHist(1,&hist_size,CV_HIST_ARRAY,ranges,1);
+            //计算灰度图像的一维直方图
+            cvCalcHist(&gray_plane,gray_hist,0,0);
+            //归一化直方图
+            cvNormalizeHist(gray_hist,1.0);
+
+            int scale = 2;
+            //创建一张一维直方图的“图”，横坐标为灰度级，纵坐标为像素个数（*scale）
+            IplImage* hist_image = cvCreateImage(cvSize(hist_size*scale,hist_height),8,3);
+            cvZero(hist_image);
+            //统计直方图中的最大直方块
+            float max_value = 0;
+            cvGetMinMaxHistValue(gray_hist, 0,&max_value,0,0);
+
+            //分别将每个直方块的值绘制到图中
+            for(int i=0;i<hist_size;i++)
+            {
+                float bin_val = cvQueryHistValue_1D(gray_hist,i); //像素i的概率
+                int intensity = cvRound(bin_val*hist_height/max_value);  //要绘制的高度
+                cvRectangle(hist_image,
+                            cvPoint(i*scale,hist_height-1),
+                            cvPoint((i+1)*scale - 1, hist_height - intensity),
+                            CV_RGB(255,255,255));
+            }
+
+
+            cvNamedWindow( "GraySource", 1 );
+            cvShowImage("GraySource",gray_plane);
+            cvNamedWindow( "H-S Histogram", 1 );
+            cvShowImage( "H-S Histogram", hist_image );
+
+            dstImage=cvarrToMat(hist_image);//IplImage转Mat
+
+
+
+
+            /////////////////////////////////
+            ////////////////////////////////
+            ////////////////////////////////
+            ////////////////////////////////
+            ///////////////////////////////
+
+
+
+
+            QString sendstrg=QString("code(%1,%2);//输入：%1，输出：%2//灰度直方图\r\n")
+                    .arg(inImgDlgVar).arg(outImgDlgVar);
+
+            if(listVariableMainWid.size()>9)
+            {
+                Mat matImageMainWid = Mat(Size(2200, 2200), CV_8UC3);//QPixmap(2200,2200);
+                listMatMainWid.append(matImageMainWid);
+            }
+            listMatMainWid.insert(listVariableMainWid.size()-1,dstImage);//添加图元list
+
+
+            emit sendStr(-1,sendstrg);//发送到code
+            emit sendDataMW(dstImage,strg,outImgDlgVar,0,-1);//发送到list
+            emit sendAction();//刷新list
+            listCodeMainWid.append(sendstrg);//添加到code存储表中
+
+
+
+            /////////////手动添加/////////////////
+            //////////////////
+            /////////////////////////////
+            ///
+
+             Mat dstImage2;
+             cv::cvtColor(matOri,dstImage2,COLOR_RGB2GRAY);
+            //Mat dstImage2=cvarrToMat(gray_plane);//IplImage转Mat
+
+            QString outImgDlgVar2;
+            QString strg2="灰度操作";
+
+
+            if(outImgDlgVar2.isEmpty())//如果没有输入变量，设为默认
+            {
+
+                QString strVar= QString::number(listVariableMainWid.size(),10,0);
+                QString strVariable=QString("image%1").arg(strVar);
+                outImgDlgVar2=strVariable;
+            }
+
+
+            listVariableMainWid.append(outImgDlgVar2);//添加变量名list
+            listNameMainWid.append(strg2);//添加操作名list
+
+
+            QString sendstrg2=QString("%1;//灰度转换\r\n").arg(outImgDlgVar2);
+
+
+
+            if(listVariableMainWid.size()>9)
+            {
+                Mat matImageMainWid = Mat(Size(2200, 2200), CV_8UC3);//QPixmap(2200,2200);
+                listMatMainWid.append(matImageMainWid);
+            }
+            listMatMainWid.insert(listVariableMainWid.size()-1,dstImage2);//添加图元list
+
+
+            emit sendStr(-1,sendstrg2);//发送到code
+            emit sendDataMW(dstImage2,strg2,outImgDlgVar2,0,-1);//发送到list
+            emit sendAction();//刷新list
+            listCodeMainWid.append(sendstrg2);//添加到code存储表中
+
+
+
+            //////////////////////////////////阈值操作////////////
+            /// \brief src
+            ///
+            ///
+
+            Mat src3=cvarrToMat(gray_plane);
+            Mat dst;
+
+            double thresh = 150;
+            double thresh2 = 200;
+            int maxVal = 255;
+            // cv::threshold(src3, dst, thresh, maxVal, cv::THRESH_BINARY);
+              cv::threshold(src3, dst, thresh, maxVal, cv::THRESH_TOZERO);
+              cv::threshold(dst, dst, thresh2, maxVal, cv::THRESH_BINARY);
+
+
+
+            cv::imshow("threshold", dst);
+
+            QString Threshold=QString::number(thresh,10,2);
+            QString setMaxShow=QString::number(maxVal,10,0);
+
+            Mat dstImage3=dst;
+            QString outImgDlgVar3;
+            QString strg3="灰度阈值操作";
+            QString sendstrg3=QString("Threshold=%1,setMaxShow=%2//灰度阈值分割\r\n")
+                    .arg(Threshold).arg(setMaxShow);
+
+            if(outImgDlgVar3.isEmpty())//如果没有输入变量，设为默认
+            {
+                QString strVar= QString::number(listVariableMainWid.size(),10,0);
+                QString strVariable=QString("image%1").arg(strVar);
+                outImgDlgVar3=strVariable;
+            }
+
+            QString sendstrg_g=QString("%1;%2").arg(outImgDlgVar3).arg(sendstrg3);
+
+
+            listVariableMainWid.append(outImgDlgVar3);//添加变量名list
+            listNameMainWid.append(strg3);//添加操作名list
+
+            if(listVariableMainWid.size()>9)
+            {
+                Mat matImageMainWid = Mat(Size(2200, 2200), CV_8UC3);//QPixmap(2200,2200);
+                listMatMainWid.append(matImageMainWid);
+            }
+            listMatMainWid.insert(listVariableMainWid.size()-1,dstImage3);//添加图元list
+
+            emit sendStr(-1,sendstrg_g);//发送到code
+            emit sendDataMW(dstImage3,strg3,outImgDlgVar3,0,-1);//发送到list
+            emit sendAction();//刷新list
+            listCodeMainWid.append(sendstrg_g);//添加到code存储表中
+
+
+
+        }
+        else
+        {
+            QMessageBox mesg;
+            mesg.about(NULL,"信息","已经取消输入");
+        }
+
+    }
+
+
+
+}
+
+
+//////////////////////////////////////////////
+///////实验程序结束
+
+
+
+
 //打开图片
 void MainWindow::on_ac_openfile_triggered()
 {
+
+
+    if (saveOffOn)
+    {
+        QMessageBox::StandardButton mesgdir= QMessageBox::information (NULL,
+                                                                       "信息", "文件未保存，是否保存？",
+                                                                      QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+        if(mesgdir==QMessageBox::Yes)
+        {
+            on_ac_savefile_triggered();
+        }
+
+    }
+
+
+
     QString fileName = QFileDialog::getOpenFileName(
                 this, tr("open image file"),
                 "./", tr("Image files(*.bmp *.jpg *.pbm *.pgm *.png *.ppm *.xbm *.xpm);;All files (*.*)"));
@@ -118,6 +423,7 @@ void MainWindow::on_ac_openfile_triggered()
     pImgMat=pImgs;//传给其他操作
     listCodeMainWid.append(sendstrg);//讲流程文本数据保存
     saveOffOn=true;
+    fileExist.clear();
 
 }
 
@@ -980,3 +1286,4 @@ void MainWindow::on_ac_dilate_triggered()
 
 
 }
+

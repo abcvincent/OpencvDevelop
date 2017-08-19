@@ -64,7 +64,8 @@ void MyImageList::showListItem(Mat dstImage,QString strName,QString controlName)
     //                mat.rows,mat.cols*dstImage.channels(),QImage::Format_RGB888);
     //    // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。
 
-    QPixmap pixmapCV = QPixmap::fromImage(images.scaled(size(), Qt::KeepAspectRatio) );
+//    QPixmap pixmapCV = QPixmap::fromImage(images.scaled(size(), Qt::KeepAspectRatio) );
+    QPixmap pixmapCV =QPixmap::fromImage(images);
     QString strg=strName;
     QListWidgetItem *LItem = new QListWidgetItem(QIcon(pixmapCV.scaled(50,50)), strg);
     ui->listWidget->setIconSize(QSize(70, 80));
@@ -130,7 +131,10 @@ void MyImageList::updataListShow(QString listNames,Mat listMats,int listRow)
     // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。
     QImage images((const uchar*)listMats.data, listMats.cols,
                   listMats.rows,listMats.cols*listMats.channels(),QImage::Format_RGB888);
-    QPixmap pixmapCV = QPixmap::fromImage(images.scaled(size(), Qt::KeepAspectRatio) );
+
+    //    QPixmap pixmapCV = QPixmap::fromImage(images.scaled(size(), Qt::KeepAspectRatio) );
+     QPixmap pixmapCV =QPixmap::fromImage(images);
+
     // QString strg=strName;
     QListWidgetItem *LItem = new QListWidgetItem(QIcon(pixmapCV.scaled(50,50)), listNames);
     ui->listWidget->setIconSize(QSize(70, 80));

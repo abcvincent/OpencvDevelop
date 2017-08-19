@@ -39,6 +39,7 @@ public:
     MyImageList *myimagelists;
 
 
+
 //    QString lineEditStr1;
 //    QString lineEditStr2;
 //    int lineInt1;
@@ -88,6 +89,8 @@ private slots:
     void on_ac_erode_triggered();
 
     void on_ac_dilate_triggered();
+
+    void on_ac_programme_triggered();
 
 private:
     Ui::MainWindow *ui;

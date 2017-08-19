@@ -107,6 +107,7 @@
     <addaction name="menu_6"/>
     <addaction name="menu_7"/>
     <addaction name="menu_9"/>
+    <addaction name="ac_programme"/>
    </widget>
    <widget class="QMenu" name="menu_8">
     <property name="title">
@@ -133,6 +134,7 @@
    </attribute>
    <addaction name="ac_openfile"/>
    <addaction name="ac_savefile"/>
+   <addaction name="ac_programme"/>
    <addaction name="ac_gray"/>
    <addaction name="ac_h_v"/>
    <addaction name="ac_erode"/>
@@ -313,6 +315,18 @@
    </property>
    <property name="toolTip">
     <string>二值图</string>
+   </property>
+  </action>
+  <action name="ac_programme">
+   <property name="icon">
+    <iconset resource="rc.qrc">
+     <normaloff>:/images/eye_32px.png</normaloff>:/images/eye_32px.png</iconset>
+   </property>
+   <property name="text">
+    <string>自定义程序</string>
+   </property>
+   <property name="toolTip">
+    <string>自定义程序运行</string>
    </property>
   </action>
  </widget>
