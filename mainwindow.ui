@@ -40,7 +40,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>23</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -108,6 +108,8 @@
     <addaction name="menu_7"/>
     <addaction name="menu_9"/>
     <addaction name="ac_programme"/>
+    <addaction name="ac_histogram"/>
+    <addaction name="ac_demo"/>
    </widget>
    <widget class="QMenu" name="menu_8">
     <property name="title">
@@ -138,6 +140,7 @@
    <addaction name="ac_gray"/>
    <addaction name="ac_h_v"/>
    <addaction name="ac_erode"/>
+   <addaction name="ac_histogram"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="ac_openfile">
@@ -327,6 +330,23 @@
    </property>
    <property name="toolTip">
     <string>自定义程序运行</string>
+   </property>
+  </action>
+  <action name="ac_histogram">
+   <property name="icon">
+    <iconset resource="rc.qrc">
+     <normaloff>:/images/Chart_64t.png</normaloff>:/images/Chart_64t.png</iconset>
+   </property>
+   <property name="text">
+    <string>直方图分割</string>
+   </property>
+   <property name="toolTip">
+    <string>直方图分割</string>
+   </property>
+  </action>
+  <action name="ac_demo">
+   <property name="text">
+    <string>自定义2</string>
    </property>
   </action>
  </widget>

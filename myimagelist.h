@@ -15,6 +15,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
+
 using namespace cv;
 
 
@@ -41,12 +42,16 @@ public:
 private slots:
     void on_listWidget_itemClicked(QListWidgetItem *item);
 
+//    void on_listWidget_itemDoubleClicked(QListWidgetItem *item);    //实验双击
+//    void  on_listWidget_itemActivated(QListWidgetItem *item); //实验
+
     void receiveDataWM(Mat,QString,QString,int,int);//接收mainwindow打开文件数据
     void receiveAction();
 
 
 
 signals:
+     //图元窗口图片被选中后弹出视图窗口，图元窗口间Mat和变量名返回给主窗口，主窗口再讲变量发给视图窗口
     void  sendDataList(Mat imageData,QString textData,QString controlName);//发送信号
 
 private:

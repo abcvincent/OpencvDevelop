@@ -1,5 +1,5 @@
 ﻿#include "variatedialog.h"
-#include "ui_variatedialog.h"
+//#include "ui_variatedialog.h"
 #include "mainwindow.h"
 #include <QString>
 #include <QMessageBox>
@@ -28,7 +28,7 @@ VariateDialog::VariateDialog(QString title,
 
     setWindowTitle(m_title);
     setModal(true);
-    setFixedSize(350,200+VariaeCount*30);
+    setFixedSize(380,220+VariaeCount*30);
 
     combox=new QComboBox(this);
 
@@ -184,7 +184,7 @@ VariateDialog::VariateDialog(QString title,
 
         lineEditVar2=new QLineEdit(this);
         QLabel *labNameVar2=new QLabel(this);
-        labNameVar2->setText("变量值1（int flipCode1）：");
+        labNameVar2->setText("变量值2（int flipCode2）：");
         layouts->addWidget(labNameVar2,6,1,1,1);
         layouts->addWidget(lineEditVar2,6,2,1,1);
 

@@ -6,14 +6,20 @@
 #include <QPixmap>
 #include <QList>
 #include "imagelook.h"
+#include "histogtamdlg.h"
+#include "showhistogtamresult.h"
+
 
 #include <math.h>
 #include <QWheelEvent>
+
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
+
+
 using namespace cv;
 
 //class ImageLook;
@@ -34,30 +40,32 @@ public:
 
     void closeEvent(QCloseEvent *event);
 
-
-
     MyImageList *myimagelists;
-
-
+    HistogtamDlg *his_dlg;
+    ShowHistogtamResult *show_his_image;
 
 //    QString lineEditStr1;
 //    QString lineEditStr2;
 //    int lineInt1;
 //    int lineInt2;
 
-
-
-
 signals:
-    void sendDataMW(Mat,QString,QString,int,int);
-    void sendAction();
-    void sendStr(int,QString);
+    void sendDataMW(Mat,QString,QString,int,int);  //给图元窗口发送信号，将Mat，图像变量名称，操作名称，行号，标记号发送给图元窗口
+    void sendAction();   //给图元窗口发送信号，让其刷新数据
+    void sendStr(int,QString);  //程序流程窗口，将操作函数文本发送给程序流程窗口
+
+//    void sendDataToHistogtamdlg(QList<Mat>,QList<QString>,int);
+    void sendDataToHistogtamdlg(QList<QString>,QList<Mat>);
+    void sendHistogtamResult(Mat);
+    void sendHistogtam_Mat(Mat);
 
 
 private slots: 
     void mesgbox();
     void receiveDataList(Mat imageData,QString textData,QString controlName);
-
+    void receiveHistogtamResult(Mat,int,int);
+    void receiveDataHd(Mat,QString,QString,int,int);//灰度阈值分割处理结果
+    void receiveStrHd(int,QString);//灰度阈值分割处理结果code
 //    void receiveDlg(QString,QString,int,int);
 
     void on_ac_openfile_triggered();
@@ -91,6 +99,10 @@ private slots:
     void on_ac_dilate_triggered();
 
     void on_ac_programme_triggered();
+
+    void on_ac_histogram_triggered();
+
+    void on_ac_demo_triggered();
 
 private:
     Ui::MainWindow *ui;

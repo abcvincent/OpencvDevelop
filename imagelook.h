@@ -11,12 +11,13 @@
 #include <QGraphicsItem>    //图元类
 #include <math.h>
 #include <QWheelEvent>
+
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
-#include "mainwindow.h"
+
 #include <QString>
 
 using namespace cv;

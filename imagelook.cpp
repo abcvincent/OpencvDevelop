@@ -62,7 +62,6 @@ void ImageLook::showImage(Mat matL,QString nameL,QString controlName)
     pixItem = new MyPixItem(new QPixmap(pixmapCV));
     //将该图元对象添加到场景中，并设置此图元在场景中的位置为中心（0，0）
     m_graphicsScene = new QGraphicsScene;  //new 一个新的场景对象
-    m_graphicsScene = new QGraphicsScene;  //new 一个新的场景对象
     ui->graphicsView->setSceneRect(-10/2,-10/2,10,10);
     //设置开启滚动条范围，不然即使隐藏了滚动条后还是有滚动效果
     ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);//隐藏横向滚动条

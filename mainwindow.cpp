@@ -33,6 +33,7 @@
 
 using namespace cv;
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -50,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
         listMatMainWid<<matImageMainWid;
     }
 
+
     myimagelists=new MyImageList;//添加list窗口对象，图元窗口
     ui->mdiArea->addSubWindow(myimagelists)->resize(300,300);//添加到mdi上
     myimagelists->show();//显示
@@ -66,6 +68,25 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(myimagelists,SIGNAL(sendDataList(Mat,QString,QString)),this,SLOT(receiveDataList(Mat,QString,QString)));
     //程序流程窗口，将操作函数文本发送给程序流程窗口
     QObject::connect(this,SIGNAL(sendStr(int,QString)),codew,SLOT(receiveStr(int,QString)));//发送到code
+
+
+    //灰度直方图信号槽
+    his_dlg=new HistogtamDlg;
+    connect(this,SIGNAL(sendDataToHistogtamdlg(QList<QString>,QList<Mat>)),
+            his_dlg,SLOT(receiveDataForHistogtamdlg(QList<QString>,QList<Mat>)));
+    connect(his_dlg,SIGNAL(sendToShowhistogtam(Mat,int,int)),
+            this,SLOT(receiveHistogtamResult(Mat,int,int)));
+
+
+    //灰度直方图分割结果信号槽
+    show_his_image=new ShowHistogtamResult;
+    connect(this,SIGNAL(sendHistogtam_Mat(Mat)),show_his_image,SLOT(receiveHistogtam_Mat(Mat)));
+
+    ////2019.12.7更新
+    //给图元窗口发送信号，将Mat，图像变量名称，操作名称，行号，标记号发送给图元窗口
+//    connect(his_dlg,SIGNAL(hdSendDataMW(QString)),this,SLOT(receiveDataHd(QString)));
+    //给图元窗口发送信号，让其刷新数据
+//    connect(his_dlg,SIGNAL(hdSendAction()),myimagelists,SLOT(receiveAction()));
 
 }
 
@@ -152,7 +173,6 @@ void MainWindow::on_ac_programme_triggered()
             listNameMainWid.append(strg);//添加操作名list
 
 
-
             ////////////////////////////////////////////////////
             ///////////////////////////////
             /////////////////////////////
@@ -172,7 +192,7 @@ void MainWindow::on_ac_programme_triggered()
             IplImage *src= &IplImage(matOri);
             IplImage* gray_plane = cvCreateImage(cvGetSize(src),8,1);
             cvCvtColor(src,gray_plane,CV_RGB2GRAY);
-//              cv::cvtColor(src,gray_plane,COLOR_RGB2GRAY);
+            //  cv::cvtColor(src,gray_plane,COLOR_RGB2GRAY);
 
 
             int hist_size = 256;    //直方图尺寸
@@ -340,22 +360,14 @@ void MainWindow::on_ac_programme_triggered()
             emit sendDataMW(dstImage3,strg3,outImgDlgVar3,0,-1);//发送到list
             emit sendAction();//刷新list
             listCodeMainWid.append(sendstrg_g);//添加到code存储表中
-
-
-
         }
         else
         {
             QMessageBox mesg;
             mesg.about(NULL,"信息","已经取消输入");
         }
-
     }
-
-
-
 }
-
 
 //////////////////////////////////////////////
 ///////实验程序结束
@@ -381,10 +393,12 @@ void MainWindow::on_ac_openfile_triggered()
     }
 
 
-
     QString fileName = QFileDialog::getOpenFileName(
                 this, tr("open image file"),
                 "./", tr("Image files(*.bmp *.jpg *.pbm *.pgm *.png *.ppm *.xbm *.xpm);;All files (*.*)"));
+
+
+
     if(fileName.isEmpty())
     {
         QMessageBox mesg;
@@ -456,10 +470,10 @@ void MainWindow::on_ac_savefile_triggered()
         }
         else
         {
-             dirPath=fileExist;
-             filePath=filePathExist;
-             QMessageBox mesgdir;
-             mesgdir.about(NULL,"保存在",fileExist);
+            dirPath=fileExist;
+            filePath=filePathExist;
+            QMessageBox mesgdir;
+            mesgdir.about(NULL,"保存在",fileExist);
         }
 
         if(filePath.isEmpty())
@@ -522,19 +536,18 @@ void MainWindow::on_ac_savefile_triggered()
                     images=imagesOriginal;
                 }
 
-                  images.save(savePath);
+                images.save(savePath);
 
             }
             QMessageBox::information(this,"信息","保存成功");
             saveOffOn=true;
 
         }
-
     }
 }
 
 
-
+//收到lmyimagelist信号，显示imagelook窗口
 void MainWindow::receiveDataList(Mat imageData,QString textData,QString controlName)
 {
     bool flags=false;
@@ -770,9 +783,6 @@ void MainWindow::on_ac_gray_triggered()//灰度图
             listVariableMainWid.append(outImgDlgVar);//添加变量名list
             listNameMainWid.append(strg);//添加操作名list
 
-
-
-
             //进行，灰度处理
             cv::cvtColor(matOri,dstImage,COLOR_RGB2GRAY);
 
@@ -864,8 +874,6 @@ void MainWindow::on_ac_h_v_triggered()
 
             QString var1=varDlg->lineEditStr1;
 
-
-
             for(int i=0;i<listVariableMainWid.size();++i)//遍历变量名，如果输出重复设为默认
             {
                 if(outImgDlgVar==listVariableMainWid.at(i))//如果没有输入变量
@@ -942,12 +950,12 @@ void MainWindow::on_ac_h_v_triggered()
 void MainWindow::on_ac_erode_triggered()
 {
     /*
-     * 先判断有没有加载图片，如果有则启动对话框，没有则不启动；
-     * 让后判断对话框点击取消或者×时候不进行操作
-     * 进入对话框后对其内已有变量进行遍历，如果新变量和之前变量一样或者空则设为默认；
-     * 进行图像转换操作；
-     * 判断mat list 是否需要开辟新空间
-     * 传递参数
+     * 1)先判断有没有加载图片，如果有则启动对话框，没有则不启动；
+     * 2)让后判断对话框点击取消或者×时候不进行操作
+     * 3)进入对话框后对其内已有变量进行遍历，如果新变量和之前变量一样或者空则设为默认；
+     * 4)进行图像转换操作；
+     * 5)判断mat list 是否需要开辟新空间
+     * 6)传递参数
      */
 
 
@@ -964,13 +972,13 @@ void MainWindow::on_ac_erode_triggered()
     QList<QString> listCV_CodeWid3;
     listCV_CodeWid3={"Not"};
 
-     int VariaeCount=2;
+    int VariaeCount=2;
 
     //    MORPH_RECT    = 0, //!< a rectangular structuring element:  \f[E_{ij}=1\f]
     //    MORPH_CROSS   = 1, //!< a cross-shaped structuring element:
     //                       //!< \f[E_{ij} =  \fork{1}{if i=\texttt{anchor.y} or j=\texttt{anchor.x}}{0}{otherwise}\f]
     //    MORPH_ELLIPSE = 2
-   ////******************************************/////
+    ////******************************************/////
 
 
     Mat dstImage;
@@ -1033,8 +1041,6 @@ void MainWindow::on_ac_erode_triggered()
                 outImgDlgVar=strVariable;
             }
 
-
-
             listVariableMainWid.append(outImgDlgVar);//添加变量名list
             listNameMainWid.append(strg);//添加操作名list
 
@@ -1053,7 +1059,7 @@ void MainWindow::on_ac_erode_triggered()
                 var2="3";
             }
 
-               //进行，腐蚀操作
+            //进行，腐蚀操作
             int erosion_type;//类型
             int erosion_size;//核大小
 
@@ -1078,7 +1084,7 @@ void MainWindow::on_ac_erode_triggered()
                                      "Size(2*erosion_size+1,2*erosion_size+1),"
                                      "Point(erosion_size,erosion_size));\r\n"
                                      "cv::erode(%3,%4,element);//腐蚀操作\r\n")
-                                      .arg(typeStrg).arg(varStrg).arg(inImgDlgVar).arg(outImgDlgVar);
+                    .arg(typeStrg).arg(varStrg).arg(inImgDlgVar).arg(outImgDlgVar);
 
             ////******************************************/////
 
@@ -1283,7 +1289,268 @@ void MainWindow::on_ac_dilate_triggered()
             mesg.about(NULL,"信息","已经取消输入");
         }
     }
+}
 
+void MainWindow::on_ac_histogram_triggered()
+{
+
+//    //信号和槽写在这里会导致卡
+//    his_dlg=new HistogtamDlg;
+//    connect(this,SIGNAL(sendDataToHistogtamdlg(QList<QString>,QList<Mat>)),
+//            his_dlg,SLOT(receiveDataForHistogtamdlg(QList<QString>,QList<Mat>)));
+//    connect(his_dlg,SIGNAL(sendToShowhistogtam(Mat,int,int)),
+//            this,SLOT(receiveHistogtamResult(Mat,int,int)));
+//    ////////
+
+        bool flags=false;
+        for(int i=0;i<ui->mdiArea->subWindowList().size();i++)
+        {
+            QString str=ui->mdiArea->subWindowList().at(i)->windowTitle();
+            if(str=="直方图分割")
+            {
+                ui->mdiArea->setActiveSubWindow(ui->mdiArea->subWindowList().at(i));
+                flags=true;
+                break;
+            }
+        }
+
+        if(flags==false)
+        {
+            if(listVariableMainWid.size()!=0)
+            {
+
+                his_dlg=new HistogtamDlg;
+                connect(this,SIGNAL(sendDataToHistogtamdlg(QList<QString>,QList<Mat>)),
+                        his_dlg,SLOT(receiveDataForHistogtamdlg(QList<QString>,QList<Mat>)));
+                connect(his_dlg,SIGNAL(sendToShowhistogtam(Mat,int,int)),
+                        this,SLOT(receiveHistogtamResult(Mat,int,int)));
+
+                //处理后图像返回
+                connect(his_dlg,SIGNAL(hdSendDataMW(Mat,QString,QString,int,int)),
+                        this,SLOT(receiveDataHd(Mat,QString,QString,int,int)));
+                //程序流程窗口，将操作函数文本发送给程序流程窗口
+                connect(his_dlg,SIGNAL(hdSendStr(int,QString)),this,SLOT(receiveStrHd(int,QString)));//发送到code
+
+
+
+                ui->mdiArea->addSubWindow(his_dlg);//->resize(550,422);
+                his_dlg->show();
+                emit sendDataToHistogtamdlg(listVariableMainWid,listMatMainWid);
+                his_dlg->refreshSenddata();
+//                  qDebug()<<"ok";//输出计时
+            }
+            else
+            {
+                QMessageBox msg;
+                msg.about(NULL,"信息","无加载图片");
+            }
+        }
+
+//    his_dlg->refreshSenddata();
+}
+
+
+ void MainWindow::receiveHistogtamResult(Mat HistogtamMat,int left_m,int right_m)
+ {
+
+//     ///写在这里会卡
+//     show_his_image=new ShowHistogtamResult;
+//     connect(this,SIGNAL(sendHistogtam_Mat(Mat)),show_his_image,SLOT(receiveHistogtam_Mat(Mat)));
+//     ////
+
+     bool flags2=false;
+     for(int i=0;i<ui->mdiArea->subWindowList().size();i++)
+     {
+         QString str2=ui->mdiArea->subWindowList().at(i)->windowTitle();
+         if(str2=="直方图分割处理结果")
+         {
+             ui->mdiArea->setActiveSubWindow(ui->mdiArea->subWindowList().at(i));
+             flags2=true;
+             break;
+         }
+     }
+     if(flags2==false)
+     {
+         if(listVariableMainWid.size()!=0)
+         {
+
+             show_his_image=new ShowHistogtamResult;
+             connect(this,SIGNAL(sendHistogtam_Mat(Mat)),show_his_image,SLOT(receiveHistogtam_Mat(Mat)));
+
+             ui->mdiArea->addSubWindow(show_his_image)->resize(300,300);
+             show_his_image->show();
+             show_his_image->showHistogtam_Mat(HistogtamMat);
+         }
+     }
+
+     show_his_image->reFresh();
+
+     emit sendHistogtam_Mat(HistogtamMat);
+ }
+
+void MainWindow::on_ac_demo_triggered()
+{
+
+
+
+    QString strg="自定义图像处理";
+    QString textDlg="算子：无";
+    QList<QString> listCV_CodeWid1;
+    listCV_CodeWid1={"Not"};
+    QList<QString> listCV_CodeWid2;
+    listCV_CodeWid2={"Not"};
+    QList<QString> listCV_CodeWid3;
+    listCV_CodeWid3={"Not"};
+    int VariaeCount=1;
+
+
+    Mat dstImage;
+    if(listVariableMainWid.isEmpty()){
+        QMessageBox emptybox;
+        emptybox.about(NULL,"信息","没有加载图片");
+    }
+    else
+    {
+        //打开操作对话框，创建时候需要将数据输入，操作名，变量list<T>,算子解释
+        VariateDialog *varDlg=new VariateDialog(strg,
+                                                listVariableMainWid,
+                                                textDlg,
+                                                VariaeCount,
+                                                listCV_CodeWid1,
+                                                listCV_CodeWid2,
+                                                listCV_CodeWid3);
+        varDlg->exec();//显示对话框
+
+        if(varDlg->cancelDlg==1)//做判断如果对话框点击取消或叉则不添加，等于1时才赋值等
+        {
+            Mat matOri;//创建一个Mat
+            for(int i=0;i<listVariableMainWid.size();++i)//遍历变量名
+            {
+                //变量名如果和对话框中的值相等输出对象的Mat
+                if(listVariableMainWid.at(i)==varDlg->comboxStr)
+                {
+                    matOri=listMatMainWid.at(i);
+                    break;
+                }
+            }
+            QString inImgDlgVar=varDlg->comboxStr;//输入变量名字
+            QString outImgDlgVar=varDlg->lineEditStr;//输出变量名字
+
+
+            for(int i=0;i<listVariableMainWid.size();++i)//遍历变量名，如果输出重复设为默认
+            {
+                if(outImgDlgVar==listVariableMainWid.at(i))//如果没有输入变量
+                {
+                    mesgbox();
+                    QString strVar= QString::number(listVariableMainWid.size(),10,0);
+                    QString strVariable=QString("image%1").arg(strVar);
+                    outImgDlgVar=strVariable;
+                    break;
+                }
+            }
+
+            if(outImgDlgVar.isEmpty())//如果没有输入变量，设为默认
+            {
+                mesgbox();
+                QString strVar= QString::number(listVariableMainWid.size(),10,0);
+                QString strVariable=QString("image%1").arg(strVar);
+                outImgDlgVar=strVariable;
+            }
+
+            listVariableMainWid.append(outImgDlgVar);//添加变量名list
+            listNameMainWid.append(strg);//添加操作名list
+
+
+            ////////////////////////////////////////////////////
+            ///////////////////////////////
+            /////////////////////////////
+            ////////////////////////
+            ///
+//            IplImage *src= &IplImage(matOri);
+//            IplImage* gray_plane = cvCreateImage(cvGetSize(src),8,1);
+
+            IplImage *src_back2 = 0;
+
+            IplImage *src2= &IplImage(matOri);
+            src_back2 = cvCreateImage(cvGetSize(src2), src2->depth, src2->nChannels);
+
+            IplImage *src = 0; //定义源图像指针
+            IplImage *tmp = 0; //定义临时图像指针
+            IplImage *src_back = 0; //定义源图像背景指针
+            IplConvKernel *element = 0; //定义形态学结构指针
+
+            //1.读取和显示图像
+            //    /* the first command line parameter must be image file name */
+            //            src = cvLoadImage("D:/ImageTest/rice.png", 0);
+            src = cvLoadImage("D:/ImageTest/1.bmp", 0);
+
+        //    src = cvLoadImage("D:/ImageTest/Rice.png", 0);
+            cvNamedWindow( "src", CV_WINDOW_AUTOSIZE );
+            cvShowImage( "src", src );
+            //cvSmooth(src, src, CV_MEDIAN, 3, 0, 0, 0); //中值滤波，消除小的噪声；
+
+            //2.估计图像背景
+            tmp = cvCreateImage( cvGetSize(src), src->depth, src->nChannels);
+            src_back = cvCreateImage( cvGetSize(src), src->depth, src->nChannels);
+            //创建结构元素
+            element = cvCreateStructuringElementEx( 4, 4, 1, 1, CV_SHAPE_ELLIPSE, 0);
+            //用该结构对源图象进行数学形态学的开操作后，估计背景亮度
+            cvErode( src, tmp, element, 10);
+            cvDilate( tmp, src_back, element, 10);
+            cvNamedWindow( "src_back", CV_WINDOW_AUTOSIZE );
+            cvShowImage( "src_back", src_back );
+
+            /////////////////////////////////
+            ////////////////////////////////
+            ////////////////////////////////
+            ////////////////////////////////
+            ///////////////////////////////
+
+
+            dstImage=cvarrToMat(src_back2);//转化语句
+
+            QString sendstrg=QString("code(%1,%2);//输入：%1，输出：%2\r\n")
+                    .arg(inImgDlgVar).arg(outImgDlgVar);
+
+            if(listVariableMainWid.size()>9)
+            {
+                Mat matImageMainWid = Mat(Size(2200, 2200), CV_8UC3);//QPixmap(2200,2200);
+                listMatMainWid.append(matImageMainWid);
+            }
+            listMatMainWid.insert(listVariableMainWid.size()-1,dstImage);//添加图元list
+
+
+            emit sendStr(-1,sendstrg);//发送到code
+            emit sendDataMW(dstImage,strg,outImgDlgVar,0,-1);//发送到list
+            emit sendAction();//刷新list
+            listCodeMainWid.append(sendstrg);//添加到code存储表中
+
+
+        }
+        else
+        {
+            QMessageBox mesg;
+            mesg.about(NULL,"信息","已经取消输入");
+        }
+    }
 
 }
 
+void MainWindow::receiveDataHd(Mat dstImage,QString strg,QString outImgDlgVar,int a,int b)
+{
+
+    QMessageBox mesg;
+    mesg.about(NULL,"信息","输出图像");
+
+//     emit sendStr(-1,sendstrg);//发送到code
+    emit sendDataMW(dstImage,strg,outImgDlgVar,0,-1);//发送到list
+    emit sendAction();//刷新list
+}
+
+//灰度阈值分割处理结果code
+void MainWindow::receiveStrHd(int a,QString strCode)
+{
+
+     emit sendStr(-1,strCode);
+
+}

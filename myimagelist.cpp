@@ -8,6 +8,7 @@
 #include "imagelook.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QDebug>
 
 
 #pragma execution_character_set("utf-8")
@@ -64,7 +65,6 @@ void MyImageList::showListItem(Mat dstImage,QString strName,QString controlName)
     //                mat.rows,mat.cols*dstImage.channels(),QImage::Format_RGB888);
     //    // 将抓取到的帧，转换为QImage格式。QImage::Format_RGB888不同的摄像头用不同的格式。
 
-//    QPixmap pixmapCV = QPixmap::fromImage(images.scaled(size(), Qt::KeepAspectRatio) );
     QPixmap pixmapCV =QPixmap::fromImage(images);
     QString strg=strName;
     QListWidgetItem *LItem = new QListWidgetItem(QIcon(pixmapCV.scaled(50,50)), strg);
@@ -88,10 +88,31 @@ void MyImageList::on_listWidget_itemClicked(QListWidgetItem *item)
     }
     int rowNb=ui->listWidget->row(item);
     emit sendDataList(matList.at(rowNb),listData.at(rowNb),listText.at(rowNb));//imagelook获得数据，窗口名字和图片
-
     showTableView(matList.at(rowNb),listText.at(rowNb),listData.at(rowNb),rowNb);
-
 }
+
+
+//void MyImageList:: on_listWidget_itemDoubleClicked(QListWidgetItem *item)
+//{
+//    if(!item)
+//    {
+//        return;
+//    }
+//    int rowNb=ui->listWidget->row(item);
+//    qDebug() <<"双击了"<<rowNb;
+//}
+
+//void MyImageList:: on_listWidget_itemActivated(QListWidgetItem *item)
+//{
+
+//    if(!item)
+//    {
+//        return;
+//    }
+//    int rowNb=ui->listWidget->row(item);
+//    qDebug() <<"信号"<<rowNb;
+//}
+
 
 void MyImageList::intoList(QString listName,QString listV, Mat listMat, int listRow, int marks)
 {
